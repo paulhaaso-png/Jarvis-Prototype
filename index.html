@@ -2,44 +2,79 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>JARVIS</title>
 <style>
-* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system, sans-serif; }
-body { background:#020a12; color:#00d4ff; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
-h1 { font-size:26px; letter-spacing:10px; font-weight:300; text-align:center; }
-h1 span { color:white; }
-.reactor-wrap { position:relative; width:260px; height:260px; margin:20px 0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
-.ring { position:absolute; border-radius:50%; border:2px solid rgba(0,212,255,0.3); }
-.ring1 { width:260px; height:260px; animation:spin 12s linear infinite; border-top:3px solid #00d4ff; border-bottom:3px solid #00d4ff; }
-.ring2 { width:210px; height:210px; animation:spinRev 8s linear infinite; border-left:2px dashed #00d4ff; border-right:2px dashed #00d4ff; }
-.ring3 { width:165px; height:165px; border:1px solid rgba(0,212,255,0.6); }
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; font-family:-apple-system, BlinkMacSystemFont, sans-serif; }
+html,body { height:100%; overflow-x:hidden; }
+body { background:#01060e; color:#00e5ff; min-height:100vh; position:relative; overflow-y:auto; padding: calc(env(safe-area-inset-top) + 10px) 16px 30px; }
+body::before { content:""; position:fixed; inset:0; background:
+ radial-gradient(ellipse at 50% 0%, rgba(0,229,255,0.18) 0%, transparent 50%),
+ radial-gradient(ellipse at 20% 80%, rgba(0,80,255,0.15) 0%, transparent 50%),
+ radial-gradient(ellipse at 80% 80%, rgba(0,255,200,0.12) 0%, transparent 50%);
+ pointer-events:none; z-index:0; }
+.scanline { position:fixed; left:0; right:0; height:2px; background:linear-gradient(90deg, transparent, #00e5ff, transparent); opacity:0.35; animation:scan 5s linear infinite; z-index:1; pointer-events:none; }
+@keyframes scan { 0%{top:0} 100%{top:100%} }
+.wrap { position:relative; z-index:2; max-width:560px; margin:0 auto; display:flex; flex-direction:column; align-items:center; }
+.topbar { width:100%; display:flex; justify-content:space-between; align-items:center; font-size:10px; letter-spacing:2px; color:#5cc8e0; border-bottom:1px solid rgba(0,229,255,0.25); padding:6px 2px 8px; }
+.topbar b { color:#fff; }
+h1 { margin-top:14px; font-size:30px; letter-spacing:12px; font-weight:200; text-align:center; color:#fff; text-shadow:0 0 20px #00e5ff, 0 0 40px #00e5ff; }
+h1 span { color:#00e5ff; }
+.subtitle { font-size:10px; letter-spacing:5px; color:#7fd8ff; margin-top:2px; }
+.hud-stats { width:100%; display:flex; gap:8px; margin-top:14px; }
+.stat { flex:1; background:rgba(0,30,50,0.7); border:1px solid rgba(0,229,255,0.35); border-radius:10px; padding:8px; text-align:center; backdrop-filter:blur(6px); }
+.stat small { display:block; font-size:9px; letter-spacing:2px; color:#7fd8ff; }
+.stat b { font-size:14px; color:#fff; }
+.bar { height:5px; background:rgba(255,255,255,0.1); border-radius:10px; margin-top:6px; overflow:hidden; }
+.bar i { display:block; height:100%; background:linear-gradient(90deg,#00e5ff,#00ff9d); width:88%; border-radius:10px; }
+.reactor-wrap { position:relative; width:260px; height:260px; margin:18px 0 6px; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ring { position:absolute; border-radius:50%; }
+.ring1 { width:260px; height:260px; border:1px solid rgba(0,229,255,0.2); }
+.ring1::before { content:""; position:absolute; inset:-1px; border-radius:50%; border:3px solid transparent; border-top:3px solid #00e5ff; border-right:3px solid #00e5ff; animation:spin 4s linear infinite; }
+.ring2 { width:215px; height:215px; border:1px dashed rgba(0,229,255,0.5); animation:spinRev 9s linear infinite; }
+.ring3 { width:175px; height:175px; border:1px solid rgba(0,229,255,0.4); box-shadow:inset 0 0 30px rgba(0,229,255,0.2); }
+.tick { position:absolute; width:2px; height:8px; background:#00e5ff; top:-4px; left:50%; }
 @keyframes spin { to{transform:rotate(360deg)} }
 @keyframes spinRev { to{transform:rotate(-360deg)} }
-.core { width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,#fff 0%,#aef6ff 20%,#00d4ff 55%,#005a7a 100%); box-shadow:0 0 60px #00d4ff, 0 0 120px #00aaff; display:flex; align-items:center; justify-content:center; font-size:11px; color:#003a4d; font-weight:800; text-align:center; }
-.core.listening { background:radial-gradient(circle,#fff 0%,#ffeaa7 20%,#ff9f00 60%,#ff5e00 100%); box-shadow:0 0 80px #ff9f00; }
-.core.speaking { animation:pulse 0.6s infinite alternate; }
-.core.thinking { background:radial-gradient(circle,#fff 0%,#ff9ff3 20%,#a855f7 60%,#6b21a8 100%); box-shadow:0 0 80px #a855f7; }
-@keyframes pulse { from{transform:scale(1)} to{transform:scale(1.08)} }
-#output { width:90%; max-width:520px; min-height:120px; max-height:200px; overflow-y:auto; background:rgba(0,20,35,0.9); border:1px solid #00d4ff; border-radius:12px; padding:14px; font-size:15px; line-height:1.5; }
-#output b { color:white; }
-#status { margin-top:8px; font-size:12px; color:#7fd8ff; }
-button { background:transparent; border:1px solid #00d4ff; color:#00d4ff; padding:9px 14px; border-radius:25px; font-size:13px; cursor:pointer; margin:4px; }
-button:active { background:#00d4ff; color:#020a12; }
-.hint { margin-top:10px; font-size:12px; color:#5aa9c5; text-align:center; }
-.chatbox { display:flex; gap:8px; width:90%; max-width:520px; margin-top:12px; }
-.chatbox input { flex:1; background:rgba(0,20,35,0.9); border:1px solid #00d4ff; border-radius:25px; padding:12px 16px; color:white; font-size:15px; outline:none; }
+.core { width:124px; height:124px; border-radius:50%; background:radial-gradient(circle at 35% 35%, #fff 0%, #c9fbff 15%, #00e5ff 45%, #0066a0 75%, #003a6a 100%); box-shadow:0 0 40px #00e5ff, 0 0 90px #00aaff, inset 0 0 20px rgba(255,255,255,0.8); display:flex; align-items:center; justify-content:center; font-size:11px; line-height:1.3; color:#002a3d; font-weight:900; text-align:center; letter-spacing:1px; transition:transform .2s; }
+.core:active { transform:scale(0.95); }
+.core.listening { background:radial-gradient(circle,#fff 0%,#ffeaa7 15%,#ff9f00 50%,#ff5e00 100%); box-shadow:0 0 50px #ff9f00, 0 0 100px #ff5e00; }
+.core.speaking { animation:pulse .5s infinite alternate; }
+.core.thinking { background:radial-gradient(circle,#fff 0%,#ff9ff3 15%,#a855f7 50%,#6b21a8 100%); box-shadow:0 0 60px #a855f7; }
+@keyframes pulse { from{transform:scale(1)} to{transform:scale(1.07)} }
+#output { width:100%; min-height:110px; background:rgba(0,15,30,0.85); border:1px solid #00e5ff; border-left:4px solid #00e5ff; border-radius:12px; padding:14px; font-size:15px; line-height:1.55; box-shadow:0 0 30px rgba(0,229,255,0.15); }
+#output b { color:#fff; }
+#status { margin-top:8px; font-size:11px; letter-spacing:2px; color:#00ff9d; }
+#status::before { content:"● "; }
+.grid { width:100%; margin-top:14px; }
+.section-title { font-size:10px; letter-spacing:4px; color:#7fd8ff; margin:14px 0 8px; display:flex; align-items:center; gap:8px; }
+.section-title::after { content:""; flex:1; height:1px; background:linear-gradient(90deg, rgba(0,229,255,0.5), transparent); }
+.btn-row { display:flex; flex-wrap:wrap; gap:8px; }
+button { background:linear-gradient(180deg, rgba(0,229,255,0.15), rgba(0,229,255,0.05)); border:1px solid rgba(0,229,255,0.6); color:#fff; padding:11px 15px; border-radius:14px; font-size:13px; font-weight:600; cursor:pointer; flex:1; min-width:110px; box-shadow:0 4px 15px rgba(0,0,0,0.3); }
+button:active { background:#00e5ff; color:#01060e; transform:scale(0.97); }
+button.primary { background:#00e5ff; color:#01060e; box-shadow:0 0 25px rgba(0,229,255,0.5); }
+.voice-row { width:100%; display:flex; gap:8px; align-items:center; margin-top:14px; font-size:12px; color:#7fd8ff; background:rgba(0,30,50,0.6); border:1px solid rgba(0,229,255,0.25); padding:10px; border-radius:12px; }
+.voice-row select { flex:1; background:#01060e; color:#fff; border:1px solid #00e5ff; border-radius:10px; padding:8px; font-size:12px; }
+.chatbox { display:flex; gap:8px; width:100%; margin-top:12px; }
+.chatbox input { flex:1; background:rgba(0,15,30,0.9); border:1px solid #00e5ff; border-radius:25px; padding:13px 16px; color:#fff; font-size:15px; outline:none; }
 .chatbox input::placeholder { color:#5aa9c5; }
-.chatbox button { background:#00d4ff; color:#020a12; font-weight:700; }
-.voice-row { display:flex; gap:8px; align-items:center; margin-top:10px; font-size:12px; color:#7fd8ff; flex-wrap:wrap; justify-content:center; }
-select { background:#020a12; color:#00d4ff; border:1px solid #00d4ff; border-radius:20px; padding:8px; max-width:200px; }
-.section-title { margin-top:12px; font-size:11px; letter-spacing:3px; color:#7fd8ff; }
+.hint { margin-top:10px; font-size:11px; color:#5aa9c5; text-align:center; }
 </style>
 </head>
 <body>
+<div class="scanline"></div>
+<div class="wrap">
+<div class="topbar"><span>STARK INDUSTRIES</span><span>MARK VII • <b>ONLINE</b></span></div>
 <h1>J.A.R.V.I.S. <span>OS</span></h1>
+<div class="subtitle">JUST A RATHER VERY INTELLIGENT SYSTEM</div>
+
+<div class="hud-stats">
+<div class="stat"><small>ENERGIE</small><b id="statPower">98%</b><div class="bar"><i style="width:98%"></i></div></div>
+<div class="stat"><small>SYSTEM</small><b>OPTIMAL</b><div class="bar"><i style="width:92%"></i></div></div>
+<div class="stat"><small id="clock">--:--</small><b id="dateLine">--</b><div class="bar"><i style="width:75%"></i></div></div>
+</div>
 
 <div class="reactor-wrap" id="reactor">
   <div class="ring ring1"></div>
@@ -49,101 +84,137 @@ select { background:#020a12; color:#00d4ff; border:1px solid #00d4ff; border-rad
 </div>
 
 <div id="output">System bereit. Tippe auf den Reaktor, Sir.</div>
-<div id="status">STATUS: BEREIT</div>
+<div id="status">BEREIT</div>
 
-<div class="section-title">— JARVIS —</div>
-<div>
-  <button id="btnStart">▶ Aktivieren</button>
+<div class="grid">
+<div class="section-title">JARVIS</div>
+<div class="btn-row">
+  <button id="btnStart" class="primary">▶ Aktivieren</button>
   <button id="btnTime">🕐 Uhrzeit</button>
   <button id="btnJoke">😄 Witz</button>
   <button id="btnWeather">🌦 Wetter</button>
 </div>
 
-<div class="section-title">— FOKUS & MUSIK —</div>
-<div>
+<div class="section-title">FOKUS & MUSIK</div>
+<div class="btn-row">
   <button id="btnFocus">🌙 Fokus an</button>
   <button id="btnFocusOff">🌞 Fokus aus</button>
-  <button id="btnPlaylist">🎵 Playlist starten</button>
+  <button id="btnPlaylist">🎵 Playlist</button>
   <button id="btnSpotify">🎧 Spotify</button>
 </div>
 
-<div class="section-title">— SCHREIBEN —</div>
-<div>
+<div class="section-title">SCHREIBEN</div>
+<div class="btn-row">
   <button id="btnMsg">💬 Nachricht</button>
   <button id="btnEmail">📧 E-Mail</button>
   <button id="btnNote">📝 Notiz</button>
 </div>
 
-<div class="section-title">— APPS ÖFFNEN —</div>
-<div>
+<div class="section-title">APPS ÖFFNEN</div>
+<div class="btn-row">
   <button id="btnYT">▶ YouTube</button>
   <button id="btnInsta">📸 Instagram</button>
   <button id="btnTikTok">🎬 TikTok</button>
   <button id="btnCamera">📷 Kamera</button>
 </div>
+</div>
 
-<div class="voice-row">🎙 Stimme: <select id="voiceSelect"><option>Lade Stimmen...</option></select> <button id="btnTestVoice">Testen</button></div>
-<div class="voice-row">Tiefe: <input type="range" id="pitchSlider" min="0" max="100" value="15" style="width:120px;"> <span id="pitchLabel">Sehr tief (Jarvis)</span></div>
+<div class="voice-row">🎙 <select id="voiceSelect"><option>Anna (Standard)</option></select> <button id="btnTestVoice" style="flex:0; min-width:70px;">Testen</button></div>
+<div class="voice-row">Tiefe: <input type="range" id="pitchSlider" min="0" max="100" value="15" style="flex:1;"> <span id="pitchLabel">Sehr tief</span></div>
 
 <div class="chatbox">
-  <input id="chatInput" placeholder="Frag Jarvis was... z.B. Erzähl mir einen Witz" />
-  <button id="btnSend">Senden</button>
+  <input id="chatInput" placeholder="Frag Jarvis was..." />
+  <button id="btnSend" style="flex:0; min-width:80px; background:#00e5ff; color:#01060e;">Senden</button>
 </div>
-<div class="hint">Tippe auf den Reaktor oder schreibe unten.</div>
+<div class="hint">Tippe auf den Reaktor oder schreibe unten. Jarvis antwortet auch per Sprache.</div>
+</div>
 
 <script>
 const output=document.getElementById('output'); const core=document.getElementById('core'); const statusEl=document.getElementById('status'); const chatInput=document.getElementById('chatInput'); const voiceSelect=document.getElementById('voiceSelect'); const pitchSlider=document.getElementById('pitchSlider'); const pitchLabel=document.getElementById('pitchLabel');
-let recognition=null; let chosenVoice=null; let userName=localStorage.getItem('jarvis_name')||"Sir";
-let jokeIndex = 0;
-const ALL_JOKES = [
-  "Warum mögen Panzer keine Witze, Sir? Weil sie immer ins Schwarze treffen.",
-  "Was sagt ein Reaktor zum anderen? Du bringst mich zum Leuchten, Sir.",
-  "Warum ist Iron Man so gut im Rechnen? Weil er immer einen Stark im Ärmel hat, Sir.",
-  "Was macht ein Computer, wenn er müde ist? Er geht in den Ruhe-Modus, Sir.",
-  "Warum gehen Geister nicht in die Schule? Weil sie schon durch alles durch sind, Sir.",
-  "Was sagt Siri zu Jarvis? Du bist nur eine billige Kopie, Sir. Aber wir wissen, dass das nicht stimmt.",
-  "Warum hat der Roboter die Treppe nicht genommen? Weil er lieber abgehoben ist, Sir.",
-  "Was ist der Lieblingsfilm von Jarvis? Iron Man, natürlich, Sir."
-];
+let recognition=null; let chosenVoice=null; let userName=localStorage.getItem('jarvis_name')||"Sir"; let jokeIndex=0;
+const ALL_JOKES=["Warum mögen Panzer keine Witze, Sir? Weil sie immer ins Schwarze treffen.","Was sagt ein Reaktor zum anderen? Du bringst mich zum Leuchten, Sir.","Warum ist Iron Man so gut im Rechnen? Weil er immer einen Stark im Ärmel hat, Sir.","Was macht ein Computer, wenn er müde ist? Er geht in den Ruhe-Modus, Sir.","Warum gehen Geister nicht in die Schule? Weil sie schon durch alles durch sind, Sir.","Was sagt Siri zu Jarvis? Du bist nur eine billige Kopie, Sir. Aber wir wissen, dass das nicht stimmt.","Warum hat der Roboter die Treppe nicht genommen? Weil er lieber abgehoben ist, Sir.","Was ist der Lieblingsfilm von Jarvis? Iron Man, natürlich, Sir."];
 
-function getPitch(){ return pitchSlider.value / 100; }
-pitchSlider.oninput=()=>{ const v=parseInt(pitchSlider.value); if(v<25) pitchLabel.textContent="Sehr tief (Jarvis)"; else if(v<60) pitchLabel.textContent="Mittel"; else pitchLabel.textContent="Hoch"; };
+function tickClock(){ const n=new Date(); document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+":"+String(n.getMinutes()).padStart(2,'0'); document.getElementById('dateLine').textContent=n.getDate()+"."+(n.getMonth()+1)+"."; document.getElementById('statPower').textContent=(96+Math.floor(Math.random()*3))+"%"; }
+setInterval(tickClock,1000); tickClock();
+
+function getPitch(){ return pitchSlider.value/100; }
+pitchSlider.oninput=()=>{ const v=parseInt(pitchSlider.value); pitchLabel.textContent=v<25?"Sehr tief":v<60?"Mittel":"Hoch"; };
 
 function loadVoices(){
-  const all = speechSynthesis.getVoices();
-  voiceSelect.innerHTML="";
-  if(all.length===0){ voiceSelect.innerHTML="<option>Keine Stimmen</option>"; return; }
-  // Alle Stimmen zeigen, Deutsch zuerst, Männer bevorzugt
-  const sorted = [...all].sort((a,b)=>{
-    const score=v=>{ let s=0; if(v.lang.toLowerCase().includes('de')) s+=50; if(v.name.includes('Daniel'))s+=30; if(v.name.includes('Stefan'))s+=25; if(v.name.includes('Martin'))s+=20; if(v.name.includes('Markus'))s+=20; if(v.name.includes('Anna'))s-=10; return s; };
-    return score(b)-score(a);
-  });
-  sorted.forEach((v,i)=>{ const o=document.createElement('option'); o.value=v.name; o.textContent=v.name + " ("+v.lang+")"; voiceSelect.appendChild(o); if(i===0) chosenVoice=v; });
+  try{
+    const all=speechSynthesis.getVoices();
+    if(!all||all.length===0) return;
+    voiceSelect.innerHTML="";
+    const sorted=[...all].sort((a,b)=>{ const s=v=>{let x=0; if(v.lang.toLowerCase().includes('de'))x+=50; if(v.name.includes('Daniel'))x+=30; if(v.name.includes('Stefan'))x+=25; if(v.name.includes('Martin'))x+=20; return x;}; return s(b)-s(a); });
+    sorted.forEach((v,i)=>{ const o=document.createElement('option'); o.value=v.name; o.textContent=v.name+" ("+v.lang+")"; voiceSelect.appendChild(o); if(i===0) chosenVoice=v; });
+  }catch(e){}
 }
-speechSynthesis.onvoiceschanged = loadVoices;
-setTimeout(loadVoices, 300);
-setTimeout(loadVoices, 1000);
-setTimeout(loadVoices, 2000);
-
-voiceSelect.onchange=()=>{ const vs=speechSynthesis.getVoices(); chosenVoice=vs.find(v=>v.name===voiceSelect.value)||chosenVoice; say("So klinge ich jetzt, " + userName + "."); };
+if('speechSynthesis' in window){ speechSynthesis.onvoiceschanged=loadVoices; setTimeout(loadVoices,500); setTimeout(loadVoices,1500); }
+voiceSelect.onchange=()=>{ try{ const vs=speechSynthesis.getVoices(); chosenVoice=vs.find(v=>v.name===voiceSelect.value)||chosenVoice; }catch(e){} say("So klinge ich jetzt, "+userName+"."); };
 
 function say(t){
   output.innerHTML="<b>JARVIS:</b> "+t;
-  core.classList.remove('thinking'); core.classList.add('speaking');
-  const u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.88; u.pitch=getPitch(); u.volume=1.0;
-  if(chosenVoice) u.voice=chosenVoice;
-  u.onend=()=>core.classList.remove('speaking'); speechSynthesis.cancel(); speechSynthesis.speak(u);
+  core.classList.remove('thinking'); core.classList.add('speaking'); statusEl.textContent="SPRICHT...";
+  try{
+    const u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.88; u.pitch=getPitch(); u.volume=1;
+    if(chosenVoice) u.voice=chosenVoice;
+    u.onend=()=>{ core.classList.remove('speaking'); statusEl.textContent="BEREIT"; };
+    speechSynthesis.cancel(); speechSynthesis.speak(u);
+    setTimeout(()=>{ core.classList.remove('speaking'); }, 4000);
+  }catch(e){ core.classList.remove('speaking'); }
 }
-function startJarvis(){ say("Guten Tag, "+userName+". Alle Systeme laufen."); statusEl.textContent="STATUS: AKTIV • ICH HÖRE ZU..."; core.innerHTML="ICH HÖRE<br>ZU"; core.classList.add('listening'); startListening(); }
-function startListening(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return; if(recognition) recognition.stop(); recognition=new SR(); recognition.lang='de-DE'; recognition.continuous=true; recognition.interimResults=false; recognition.onresult=(e)=>{ const t=e.results[e.results.length-1][0].transcript.toLowerCase(); if(t.includes("jarvis")) handleCommand(t); }; recognition.onend=()=>{ try{recognition.start();}catch(e){} }; try{recognition.start();}catch(e){} }
-
-function runShortcut(name){ say("Führe Kurzbefehl aus: " + name + ", " + userName + "."); window.location.href='shortcuts://run-shortcut?name='+encodeURIComponent(name); }
+function startJarvis(){ say("Guten Tag, "+userName+". Alle Systeme laufen. Ich bin bereit."); statusEl.textContent="AKTIV • ICH HÖRE ZU"; core.innerHTML="ICH HÖRE<br>ZU"; core.classList.add('listening'); startListening(); }
+function startListening(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return; try{ if(recognition) recognition.stop(); recognition=new SR(); recognition.lang='de-DE'; recognition.continuous=true; recognition.interimResults=false; recognition.onresult=(e)=>{ const t=e.results[e.results.length-1][0].transcript.toLowerCase(); if(t.includes("jarvis")) handleCommand(t); }; recognition.onend=()=>{ try{recognition.start();}catch(e){} }; recognition.start(); }catch(e){} }
+function runShortcut(name){ say("Führe Kurzbefehl aus: "+name+", "+userName+"."); setTimeout(()=>{ window.location.href='shortcuts://run-shortcut?name='+encodeURIComponent(name); }, 400); }
 function openApp(app){
-  if(app==='youtube'){ say("Öffne YouTube, "+userName+"."); window.location.href='youtube://'; setTimeout(()=>{window.location.href='https://youtube.com';},800); }
-  if(app==='instagram'){ say("Öffne Instagram, "+userName+"."); window.location.href='instagram://'; setTimeout(()=>{window.location.href='https://instagram.com';},800); }
-  if(app==='tiktok'){ say("Öffne TikTok, "+userName+"."); window.location.href='musically://'; setTimeout(()=>{window.location.href='https://tiktok.com';},800); }
-  if(app==='spotify'){ say("Öffne Spotify, "+userName+"."); window.location.href='spotify://'; setTimeout(()=>{window.location.href='https://open.spotify.com';},800); }
-  if(app==='camera'){ say("Öffne Kamera, "+userName+"."); window.location.href='camera://'; }
+  if(app==='youtube'){ say("Öffne YouTube, "+userName+"."); setTimeout(()=>{ window.location.href='https://youtube.com'; },400); }
+  if(app==='instagram'){ say("Öffne Instagram, "+userName+"."); setTimeout(()=>{ window.location.href='https://instagram.com'; },400); }
+  if(app==='tiktok'){ say("Öffne TikTok, "+userName+"."); setTimeout(()=>{ window.location.href='https://tiktok.com'; },400); }
+  if(app==='spotify'){ say("Öffne Spotify, "+userName+"."); setTimeout(()=>{ window.location.href='https://open.spotify.com'; },400); }
+  if(app==='camera'){ say("Öffne Kamera, "+userName+"."); }
 }
-function sendMessage(){ say("Öffne Nachrichten, "+userName+"."); window.location.href='sms://'; }
-function sendEmail(){ say("Öffne
+function sendMessage(){ say("Öffne Nachrichten, "+userName+"."); setTimeout(()=>{ window.location.href='sms://'; },400); }
+function sendEmail(){ say("Öffne E-Mails, "+userName+"."); setTimeout(()=>{ window.location.href='mailto:?subject=Von Jarvis&body=Hallo, geschrieben mit Jarvis.'; },400); }
+async function askAI(q){
+  core.classList.add('thinking'); core.innerHTML="DENKE<br>NACH..."; output.innerHTML="<b>DU:</b> "+q+"<br><b>JARVIS:</b> Einen Moment, "+userName+"...";
+  try{ const p="Du bist Jarvis aus Iron Man. Antworte kurz, cool, auf Deutsch, sprich den User als "+userName+" an, max 3 Sätze. Frage: "+q; const r=await fetch('https://text.pollinations.ai/'+encodeURIComponent(p)); const a=await r.text(); core.innerHTML="ICH HÖRE<br>ZU"; core.classList.remove('thinking'); say(a); }catch(e){ core.classList.remove('thinking'); say("Externe KI nicht erreichbar, "+userName+". Aber ich bin trotzdem da."); }
+}
+function handleCommand(text){
+  output.innerHTML="<b>DU:</b> "+text;
+  if(text.includes("ich heiße")||text.includes("mein name ist")){ let n=text.split("heiße")[1]||text.split("ist")[1]||""; n=n.replace(/[^a-zäöü ]/gi,"").trim(); n=n.charAt(0).toUpperCase()+n.slice(1); if(n){ userName=n; localStorage.setItem('jarvis_name',n); say("Sehr erfreut, "+n+"."); } return; }
+  if(text.includes("wie heiße ich")){ say("Sie heißen "+userName+"."); return; }
+  if(text.includes("fokus aus")) runShortcut('Fokus aus');
+  else if(text.includes("fokus")) runShortcut('Fokus an');
+  else if(text.includes("playlist")||text.includes("musik")) runShortcut('Playlist');
+  else if(text.includes("nachricht")) sendMessage();
+  else if(text.includes("e-mail")||text.includes("email")||text.includes("mail")) sendEmail();
+  else if(text.includes("notiz")) runShortcut('Notiz erstellen');
+  else if(text.includes("instagram")||text.includes("insta")) openApp('instagram');
+  else if(text.includes("tiktok")) openApp('tiktok');
+  else if(text.includes("youtube")) openApp('youtube');
+  else if(text.includes("spotify")) openApp('spotify');
+  else if(text.includes("kamera")) openApp('camera');
+  else if(text.includes("uhr")||text.includes("zeit")) askTime();
+  else if(text.includes("witz")) askJoke();
+  else if(text.includes("wetter")) askWeather();
+  else if(text.includes("datum")) askDate();
+  else if(text.includes("danke")) say("Stets zu Ihren Diensten, "+userName+".");
+  else if(text.includes("hallo")||text.includes("hey")) say("Hallo "+userName+". Bereit.");
+  else askAI(text);
+}
+function askTime(){ const n=new Date(); say("Es ist "+n.getHours()+" Uhr "+String(n.getMinutes()).padStart(2,'0')+", "+userName+"."); }
+function askJoke(){ const j=ALL_JOKES[jokeIndex%ALL_JOKES.length]; jokeIndex++; say(j); }
+function askDate(){ const n=new Date(); const t=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"]; say("Heute ist "+t[n.getDay()]+", der "+n.getDate()+"."+(n.getMonth()+1)+"."+n.getFullYear()+", "+userName+"."); }
+function askWeather(){ say("Ich checke das Wetter, "+userName+"."); fetch('https://wttr.in/Berlin?format=%C+%t').then(r=>r.text()).then(t=>say("In Berlin: "+t+", "+userName+".")).catch(()=>say("Wetter nicht ladbar.")); }
+function sendChat(){ const q=chatInput.value.trim(); if(!q) return; chatInput.value=""; handleCommand(q.toLowerCase()); }
+function bind(id,fn){ const el=document.getElementById(id); if(el){ el.onclick=fn; el.ontouchend=(e)=>{ e.preventDefault(); fn(); }; } }
+bind('btnStart',startJarvis); bind('btnTime',askTime); bind('btnJoke',askJoke); bind('btnWeather',askWeather);
+bind('btnFocus',()=>runShortcut('Fokus an')); bind('btnFocusOff',()=>runShortcut('Fokus aus')); bind('btnPlaylist',()=>runShortcut('Playlist')); bind('btnSpotify',()=>openApp('spotify'));
+bind('btnMsg',sendMessage); bind('btnEmail',sendEmail); bind('btnNote',()=>runShortcut('Notiz erstellen'));
+bind('btnYT',()=>openApp('youtube')); bind('btnInsta',()=>openApp('instagram')); bind('btnTikTok',()=>openApp('tiktok')); bind('btnCamera',()=>openApp('camera'));
+bind('reactor',startJarvis); bind('btnSend',sendChat);
+bind('btnTestVoice',()=>say("Guten Tag, "+userName+". Ich bin Jarvis. Alle Systeme laufen."));
+chatInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter') sendChat(); });
+</script>
+</body>
+</html>
