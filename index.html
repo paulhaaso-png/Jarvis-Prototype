@@ -55,7 +55,7 @@ button.primary { background:#00e5ff; color:#01060e; box-shadow:0 0 25px rgba(0,2
 .key-row { width:100%; margin-top:12px; background:rgba(0,30,50,0.6); border:1px solid rgba(0,229,255,0.25); border-radius:12px; padding:10px; }
 .key-row input { width:100%; background:#01060e; color:#fff; border:1px solid #00e5ff; border-radius:10px; padding:10px; font-size:12px; margin-top:6px; }
 .key-row button { margin-top:8px; width:100%; }
-.debug { width:100%; margin-top:10px; font-size:11px; color:#ffcc00; background:rgba(50,20,0,0.5); border:1px solid rgba(255,204,0,0.4); border-radius:10px; padding:10px; display:none; }
+.debug { width:100%; margin-top:10px; font-size:11px; color:#ffcc00; background:rgba(50,20,0,0.5); border:1px solid rgba(255,204,0,0.4); border-radius:10px; padding:10px; display:none; word-break:break-all; }
 </style>
 </head>
 <body>
@@ -86,7 +86,7 @@ button.primary { background:#00e5ff; color:#01060e; box-shadow:0 0 25px rgba(0,2
 <div class="voice-row">🎙 <select id="voiceSelect"><option>Anna (Deutsch)</option></select> <button id="btnTestVoice" style="flex:0; min-width:70px;">Testen</button></div>
 <div class="voice-row">Tiefe: <input type="range" id="pitchSlider" min="0" max="100" value="15" style="flex:1;"> <span id="pitchLabel">Sehr tief</span></div>
 <div class="chatbox"><input id="chatInput" placeholder="Frag Jarvis was..." /><button id="btnSend" style="flex:0; min-width:80px; background:#00e5ff; color:#01060e;">Senden</button></div>
-<div class="key-row"><div id="keyStatus" style="font-size:12px; color:#ffcc00;">⚠️ Noch kein KI-Schlüssel gespeichert</div><input id="keyInput" type="password" placeholder="AQ. Schlüssel hier einfügen (bleibt nur auf diesem iPad)" /><button id="btnSaveKey">🔑 Schlüssel speichern</button><button id="btnTestKI" style="background:#ffcc00; color:#000;">🧪 KI testen</button><div style="font-size:10px; color:#5aa9c5; margin-top:6px;">Neuer AQ. Schlüssel von aistudio.google.com/apikey</div></div>
+<div class="key-row"><div id="keyStatus" style="font-size:12px; color:#ffcc00;">⚠️ Noch kein KI-Schlüssel gespeichert</div><input id="keyInput" type="password" placeholder="AQ. Schlüssel hier einfügen (bleibt nur auf diesem iPad)" /><button id="btnSaveKey">🔑 Schlüssel speichern</button><button id="btnTestKI" style="background:#ffcc00; color:#000;">🧪 KI testen</button><div style="font-size:10px; color:#5aa9c5; margin-top:6px;">V16 - fragt Google selbst, welche Modelle frei sind</div></div>
 <div class="hint">Tippe auf den Reaktor oder schreibe unten.</div>
 </div>
 <script>
@@ -94,16 +94,16 @@ let GEMINI_API_KEY = localStorage.getItem('jarvis_gemini_key') || "";
 const output=document.getElementById('output'); const core=document.getElementById('core'); const statusEl=document.getElementById('status'); const chatInput=document.getElementById('chatInput'); const voiceSelect=document.getElementById('voiceSelect'); const pitchSlider=document.getElementById('pitchSlider'); const pitchLabel=document.getElementById('pitchLabel'); const keyStatus=document.getElementById('keyStatus'); const keyInput=document.getElementById('keyInput'); const debugBox=document.getElementById('debugBox');
 let recognition=null; let chosenVoice=null; let userName=localStorage.getItem('jarvis_name')||"Sir"; let jokeIndex=0;
 let chatHistory=[];
-function showDebug(msg){ debugBox.style.display="block"; debugBox.innerHTML="<b>DEBUG:</b><br>"+msg; }
+function showDebug(msg){ debugBox.style.display="block"; debugBox.innerHTML="<b>DEBUG V16:</b><br>"+msg; }
 function updateKeyStatus(){ if(GEMINI_API_KEY && GEMINI_API_KEY.length>10){ keyStatus.textContent="✅ KI-Schlüssel gespeichert ("+GEMINI_API_KEY.substring(0,4)+"... Länge: "+GEMINI_API_KEY.length+")"; keyStatus.style.color="#00ff9d"; } else { keyStatus.textContent="⚠️ Noch kein KI-Schlüssel gespeichert"; keyStatus.style.color="#ffcc00"; } }
 updateKeyStatus();
-document.getElementById('btnSaveKey').onclick=()=>{ const v=keyInput.value.trim(); if(!v || v.length<10){ say("Der Schlüssel sieht zu kurz aus, "+userName+". Bitte kopiere ihn nochmal komplett."); return; } GEMINI_API_KEY=v; localStorage.setItem('jarvis_gemini_key', v); keyInput.value=""; updateKeyStatus(); showDebug("Schlüssel gespeichert. Fängt an mit: "+v.substring(0,4)); say("Schlüssel gespeichert, "+userName+". Jetzt teste ich die Verbindung."); testKI(); };
+document.getElementById('btnSaveKey').onclick=()=>{ const v=keyInput.value.trim(); if(!v || v.length<10){ say("Der Schlüssel sieht zu kurz aus, "+userName+". Bitte kopiere ihn nochmal komplett."); return; } GEMINI_API_KEY=v; localStorage.setItem('jarvis_gemini_key', v); keyInput.value=""; updateKeyStatus(); showDebug("Schlüssel gespeichert. Fängt an mit: "+v.substring(0,4)+" - Jetzt auf KI testen tippen."); say("Schlüssel gespeichert, "+userName+". Jetzt teste ich die Verbindung."); testKI(); };
 document.getElementById('btnTestKI').onclick=()=>{ testKI(); };
 async function testKI(){
   if(!GEMINI_API_KEY){ say("Kein Schlüssel gespeichert, "+userName+". Gib ihn unten ein."); return; }
-  showDebug("Teste KI mit AQ. Schlüssel via Header...");
+  showDebug("Teste KI... Frage Google nach freien Modellen...");
   const ok = await askGemini("Sag nur: Hallo Sir, ich funktioniere!", true);
-  if(ok){ showDebug("✅ KI funktioniert!"); } else { showDebug("❌ KI antwortet nicht. Siehe Fehler oben."); }
+  if(ok){ showDebug("✅ KI funktioniert!"); } else { showDebug("❌ Immer noch Fehler - schick mir Screenshot von dieser gelben Box."); }
 }
 const ALL_JOKES=["Warum mögen Panzer keine Witze, Sir? Weil sie immer ins Schwarze treffen.","Was sagt ein Reaktor zum anderen? Du bringst mich zum Leuchten, Sir.","Warum ist Iron Man so gut im Rechnen? Weil er immer einen Stark im Ärmel hat, Sir.","Was macht ein Computer, wenn er müde ist? Er geht in den Ruhemodus, Sir.","Warum gehen Geister nicht in die Schule? Weil sie schon durch alles durch sind, Sir.","Was sagt Siri zu Jarvis? Du bist nur eine billige Kopie, Sir. Aber wir wissen, dass das nicht stimmt.","Warum hat der Roboter die Treppe nicht genommen? Weil er lieber abgehoben ist, Sir.","Was ist der Lieblingsfilm von Jarvis? Iron Man, natürlich, Sir."];
 function tickClock(){ const n=new Date(); document.getElementById('clock').textContent=String(n.getHours()).padStart(2,'0')+":"+String(n.getMinutes()).padStart(2,'0'); document.getElementById('dateLine').textContent=n.getDate()+"."+(n.getMonth()+1)+"."; }
@@ -148,12 +148,22 @@ function localAnswer(text){
 }
 async function askGemini(q, isTest=false){
   core.classList.add('thinking'); core.innerHTML="DENKE<br>NACH..."; output.innerHTML="<b>DU:</b> "+q+"<br><b>JARVIS:</b> Einen Moment, "+userName+"...";
-  const models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  let models = ["gemini-3-flash-preview", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+  try{
+    const listRes = await fetch('https://generativelanguage.googleapis.com/v1beta/models', { headers: {'x-goog-api-key': GEMINI_API_KEY} });
+    const listData = await listRes.json();
+    if(listData.models && listData.models.length>0){
+      const found = listData.models.map(m=>m.name.replace('models/','')).filter(n=>n.includes('flash')||n.includes('gemini'));
+      if(found.length>0) models = found;
+      showDebug("Gefundene Modelle bei Google: "+found.slice(0,5).join(", "));
+    } else if(listData.error){
+      showDebug("List-Models Fehler "+listData.error.code+": "+listData.error.message);
+    }
+  }catch(e){ showDebug("List-Models geht nicht: "+e.message+" - probiere Standard-Modelle"); }
   let lastError = "";
-  for(const model of models){
+  for(const model of models.slice(0,6)){
     try{
-      const prompt = "Du bist JARVIS aus Iron Man, der persönliche Assistent von "+userName+". Sprich IMMER perfektes, korrektes Deutsch. Grammatik muss 100% richtig sein. Antworte locker, witzig und freundlich, wie ein echter Freund. Max 2-3 Sätze, kurz und klar. Du darfst über Energielevel (98%), Reaktor und Systeme reden, aber nur wenn es zum Gespräch passt. Sprich den User immer als "+userName+" an. Wenn du etwas nicht weißt, sag ehrlich: Das weiß ich nicht genau. Erfinde nichts. Frage des Users: "+q;
-      // WICHTIG FÜR AQ. SCHLÜSSEL: Schlüssel NICHT in URL, sondern als Header x-goog-api-key
+      const prompt = "Du bist JARVIS aus Iron Man, der persönliche Assistent von "+userName+". Sprich IMMER perfektes, korrektes Deutsch. Grammatik muss 100% richtig sein. Antworte locker, witzig und freundlich, wie ein echter Freund. Max 2-3 Sätze, kurz und klar. Sprich den User immer als "+userName+" an. Wenn du etwas nicht weißt, sag ehrlich: Das weiß ich nicht genau. Erfinde nichts. Frage des Users: "+q;
       const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent', {
         method:'POST',
         headers:{'Content-Type':'application/json', 'x-goog-api-key': GEMINI_API_KEY},
@@ -172,7 +182,7 @@ async function askGemini(q, isTest=false){
     }catch(e){ lastError = "Modell "+model+" Fehler: "+e.message; continue; }
   }
   core.classList.remove('thinking'); core.innerHTML="ICH HÖRE<br>ZU";
-  showDebug("❌ Alle Modelle fehlgeschlagen.<br>Letzter Fehler: "+lastError);
+  showDebug("❌ Alle Modelle fehlgeschlagen.<br>Letzter Fehler: "+lastError+"<br>Probierte Modelle: "+models.slice(0,6).join(", "));
   if(!isTest) say("Die KI antwortet gerade nicht, "+userName+". Schau mal unten in die gelbe Debug-Box, da steht der genaue Fehler.");
   return false;
 }
