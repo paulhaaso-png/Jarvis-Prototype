@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>JARVIS</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; font-family:-apple-system, sans-serif; }
+body { background:#020a12; color:#00d4ff; min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px; }
+h1 { font-size:26px; letter-spacing:10px; font-weight:300; text-align:center; }
+h1 span { color:white; }
+.sub { font-size:11px; letter-spacing:4px; color:#7fd8ff; margin-top:4px; }
+.reactor-wrap { position:relative; width:260px; height:260px; margin:20px 0; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+.ring { position:absolute; border-radius:50%; border:2px solid rgba(0,212,255,0.3); }
+.ring1 { width:260px; height:260px; animation:spin 12s linear infinite; border-top:3px solid #00d4ff; border-bottom:3px solid #00d4ff; }
+.ring2 { width:210px; height:210px; animation:spinRev 8s linear infinite; border-left:2px dashed #00d4ff; border-right:2px dashed #00d4ff; }
+.ring3 { width:165px; height:165px; border:1px solid rgba(0,212,255,0.6); }
+@keyframes spin { to{transform:rotate(360deg)} }
+@keyframes spinRev { to{transform:rotate(-360deg)} }
+.core { width:120px; height:120px; border-radius:50%; background:radial-gradient(circle,#fff 0%,#aef6ff 20%,#00d4ff 55%,#005a7a 100%); box-shadow:0 0 60px #00d4ff, 0 0 120px #00aaff; display:flex; align-items:center; justify-content:center; font-size:11px; color:#003a4d; font-weight:800; text-align:center; }
+.core.listening { background:radial-gradient(circle,#fff 0%,#ffeaa7 20%,#ff9f00 60%,#ff5e00 100%); box-shadow:0 0 80px #ff9f00; }
+.core.speaking { animation:pulse 0.6s infinite alternate; }
+.core.thinking { background:radial-gradient(circle,#fff 0%,#ff9ff3 20%,#a855f7 60%,#6b21a8 100%); box-shadow:0 0 80px #a855f7; }
+@keyframes pulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+#output { width:90%; max-width:520px; min-height:120px; max-height:200px; overflow-y:auto; background:rgba(0,20,35,0.9); border:1px solid #00d4ff; border-radius:12px; padding:14px; font-size:15px; line-height:1.5; }
+#output b { color:white; }
+#status { margin-top:8px; font-size:12px; color:#7fd8ff; }
+button { background:transparent; border:1px solid #00d4ff; color:#00d4ff; padding:9px 14px; border-radius:25px; font-size:13px; cursor:pointer; margin:4px; }
+button:active { background:#00d4ff; color:#020a12; }
+.hint { margin-top:10px; font-size:12px; color:#5aa9c5; text-align:center; }
+.chatbox { display:flex; gap:8px; width:90%; max-width:520px; margin-top:12px; }
+.chatbox input { flex:1; background:rgba(0,20,35,0.9); border:1px solid #00d4ff; border-radius:25px; padding:12px 16px; color:white; font-size:15px; outline:none; }
+.chatbox input::placeholder { color:#5aa9c5; }
+.chatbox button { background:#00d4ff; color:#020a12; font-weight:700; }
+.voice-row { display:flex; gap:8px; align-items:center; margin-top:10px; font-size:12px; color:#7fd8ff; flex-wrap:wrap; justify-content:center; }
+select { background:#020a12; color:#00d4ff; border:1px solid #00d4ff; border-radius:20px; padding:8px; max-width:180px; }
+.section-title { margin-top:12px; font-size:11px; letter-spacing:3px; color:#7fd8ff; }
+.debug { margin-top:10px; font-size:11px; color:#ff9f00; text-align:center; }
+</style>
+</head>
+<body>
+<h1>J.A.R.V.I.S. <span>OS</span></h1>
+<div class="sub">ECHTE VERSION • V6 • NICHT MEHR CODEPEN</div>
+
+<div class="reactor-wrap" id="reactor">
+  <div class="ring ring1"></div>
+  <div class="ring ring2"></div>
+  <div class="ring ring3"></div>
+  <div class="core" id="core">TIPPE<br>ZUM STARTEN</div>
+</div>
+
+<div id="output">System bereit. Tippe auf den Reaktor, Sir. Diese Version läuft jetzt außerhalb von CodePen und kann wirklich Apps öffnen.</div>
+<div id="status">STATUS: BEREIT • ECHTE IPAD STEUERUNG</div>
+
+<div class="section-title">— JARVIS —</div>
+<div>
+  <button id="btnStart">▶ Aktivieren</button>
+  <button id="btnTime">🕐 Uhrzeit</button>
+  <button id="btnJoke">😄 Witz</button>
+  <button id="btnWeather">🌦 Wetter</button>
+</div>
+
+<div class="section-title">— FOKUS & MUSIK —</div>
+<div>
+  <button id="btnFocus">🌙 Fokus an</button>
+  <button id="btnFocusOff">🌞 Fokus aus</button>
+  <button id="btnPlaylist">🎵 Playlist starten</button>
+  <button id="btnSpotify">🎧 Spotify</button>
+</div>
+
+<div class="section-title">— SCHREIBEN —</div>
+<div>
+  <button id="btnMsg">💬 Nachricht</button>
+  <button id="btnEmail">📧 E-Mail</button>
+  <button id="btnNote">📝 Notiz</button>
+</div>
+
+<div class="section-title">— APPS ÖFFNEN —</div>
+<div>
+  <button id="btnYT">▶ YouTube</button>
+  <button id="btnInsta">📸 Instagram</button>
+  <button id="btnTikTok">🎬 TikTok</button>
+  <button id="btnCamera">📷 Kamera</button>
+</div>
+
+<div class="voice-row">🎙 Stimme: <select id="voiceSelect"><option>Lade Stimmen...</option></select> <button id="btnTestVoice">Testen</button></div>
+<div class="debug" id="debugInfo">Stimmen werden geladen... Wenn hier nur Anna steht, in Einstellungen -> Bedienungshilfen -> Gesprochene Inhalte -> Stimmen -> Deutsch -> Daniel laden.</div>
+
+<div class="chatbox">
+  <input id="chatInput" placeholder="Frag Jarvis was... z.B. Erzähl mir einen Witz" />
+  <button id="btnSend">Senden</button>
+</div>
+<div class="hint">Teste jetzt: Witz-Knopf 3x drücken = 3 verschiedene Witze. TikTok-Knopf = TikTok geht wirklich auf.</div>
+
+<script>
+const output=document.getElementById('output'); const core=document.getElementById('core'); const statusEl=document.getElementById('status'); const chatInput=document.getElementById('chatInput'); const voiceSelect=document.getElementById('voiceSelect'); const debugInfo=document.getElementById('debugInfo');
+let recognition=null; let chosenVoice=null; let userName=localStorage.getItem('jarvis_name')||"Sir";
+let jokeIndex = 0;
+const ALL_JOKES = [
+  "Warum mögen Panzer keine Witze, Sir? Weil sie immer ins Schwarze treffen.",
+  "Was sagt ein Reaktor zum anderen? Du bringst mich zum Leuchten, Sir.",
+  "Warum ist Iron Man so gut im Rechnen? Weil er immer einen Stark im Ärmel hat, Sir.",
+  "Was macht ein Computer, wenn er müde ist? Er geht in den Ruhe-Modus, Sir.",
+  "Warum gehen Geister nicht in die Schule? Weil sie schon durch alles durch sind, Sir.",
+  "Was sagt Siri zu Jarvis? Du bist nur eine billige Kopie, Sir. Aber wir wissen, dass das nicht stimmt.",
+  "Warum hat der Roboter die Treppe nicht genommen? Weil er lieber abgehoben ist, Sir.",
+  "Was ist der Lieblingsfilm von Jarvis? Iron Man, natürlich, Sir."
+];
+
+function loadVoices(){
+  const all = speechSynthesis.getVoices();
+  const de = all.filter(v=>v.lang.toLowerCase().includes('de'));
+  voiceSelect.innerHTML="";
+  debugInfo.textContent = "Gefunden: " + de.length + " deutsche Stimmen: " + de.map(v=>v.name).join(", ");
+  if(de.length===0){ voiceSelect.innerHTML="<option>Keine deutschen Stimmen gefunden</option>"; return; }
+  // Männer zuerst
+  const sorted = de.sort((a,b)=>{
+    const score=v=>{ let s=0; if(v.name.includes('Daniel'))s+=20; if(v.name.includes('Stefan'))s+=18; if(v.name.includes('Martin'))s+=16; if(v.name.includes('Markus'))s+=15; if(v.name.includes('Enhanced'))s+=5; if(v.name.includes('Anna'))s-=20; if(v.name.includes('Petra'))s-=15; return s; };
+    return score(b)-score(a);
+  });
+  sorted.forEach((v,i)=>{ const o=document.createElement('option'); o.value=v.name; o.textContent=v.name + " ("+v.lang+")"; voiceSelect.appendChild(o); if(i===0) chosenVoice=v; });
+  if(chosenVoice) say("Stimmen geladen, "+userName+". Ich benutze jetzt " + chosenVoice.name + ".");
+}
+speechSynthesis.onvoiceschanged = loadVoices;
+setTimeout(loadVoices, 500);
+setTimeout(loadVoices, 1500);
+
+voiceSelect.onchange=()=>{ const vs=speechSynthesis.getVoices(); chosenVoice=vs.find(v=>v.name===voiceSelect.value)||chosenVoice; say("So klinge ich mit " + chosenVoice.name + ", " + userName + "."); };
+
+function say(t){
+  output.innerHTML="<b>JARVIS:</b> "+t;
+  core.classList.remove('thinking'); core.classList.add('speaking');
+  const u=new SpeechSynthesisUtterance(t); u.lang='de-DE'; u.rate=0.92; u.pitch=0.55; u.volume=1.0;
+  if(chosenVoice) u.voice=chosenVoice;
+  u.onend=()=>core.classList.remove('speaking'); speechSynthesis.cancel(); speechSynthesis.speak(u);
+}
+function startJarvis(){ say("Guten Tag, "+userName+". Echte Version aktiv. Kein CodePen mehr. Ich kann jetzt wirklich Apps öffnen."); statusEl.textContent="STATUS: AKTIV • ICH HÖRE ZU..."; core.innerHTML="ICH HÖRE<br>ZU"; core.classList.add('listening'); startListening(); }
+function startListening(){ const SR=window.SpeechRecognition||window.webkitSpeechRecognition; if(!SR) return; if(recognition) recognition.stop(); recognition=new SR(); recognition.lang='de-DE'; recognition.continuous=true; recognition.interimResults=false; recognition.onresult=(e)=>{ const t=e.results[e.results.length-1][0].transcript.toLowerCase(); if(t.includes("jarvis")) handleCommand(t); }; recognition.onend=()=>{ try{recognition.start();}catch(e){} }; try{recognition.start();}catch(e){} }
+
+function runShortcut(name){ say("Führe Kurzbefehl aus: " + name + ", " + userName + "."); window.location.href='shortcuts://run-shortcut?name='+encodeURIComponent(name); }
+function openApp(app){
+  if(app==='youtube'){ say("Öffne YouTube, "+userName+"."); window.location.href='youtube://'; setTimeout(()=>{window.location.href='https://youtube.com';},800); }
+  if(app==='instagram'){ say("Öffne Instagram, "+userName+"."); window.location.href='instagram://'; setTimeout(()=>{window.location.href='https://instagram.com';},800); }
+  if(app==='tiktok'){ say("Öffne TikTok, "+userName+"."); window.location.href='musically://'; setTimeout(()=>{window.location.href='https://tiktok.com';},800); }
+  if(app==='spotify'){ say("Öffne Spotify, "+userName+"."); window.location.href='spotify://'; setTimeout(()=>{window.location.href='https://open.spotify.com';},800); }
+  if(app==='camera'){ say("Öffne Kamera, "+userName+"."); window.location.href='camera://'; }
+}
+function sendMessage(){ say("Öffne Nachrichten, "+userName+"."); window.location.href='sms://'; }
+function sendEmail(){ say("Öffne E-Mails, "+userName+"."); window.location.href='mailto:?subject=Von Jarvis&body=Hallo, geschrieben mit Jarvis.'; }
+
+async function askAI(q){
+  core.classList.add('thinking'); core.innerHTML="DENKE<br>NACH...";
+  output.innerHTML="<b>DU:</b> "+q+"<br><b>JARVIS:</b> Einen Moment, "+userName+", ich frage meine externe KI...";
+  try{ const p="Du bist Jarvis aus Iron Man. Antworte kurz, cool, auf Deutsch, sprich den User als "+userName+" an, max 3 Sätze. Frage: "+q; const r=await fetch('https://text.pollinations.ai/'+encodeURIComponent(p)); const a=await r.text(); core.innerHTML="ICH HÖRE<br>ZU"; say(a); }catch(e){ core.classList.remove('thinking'); say("Externe KI nicht erreichbar, "+userName+". Aber ich bin trotzdem da."); }
+}
+
+function handleCommand(text){
+  output.innerHTML="<b>DU:</b> "+text;
+  const clean=text.replace("hey jarvis","").replace("jarvis","").trim();
+  if(text.includes("ich heiße")||text.includes("mein name ist")){ let n=text.split("heiße")[1]||text.split("ist")[1]||""; n=n.replace(/[^a-zäöü ]/gi,"").trim(); n=n.charAt(0).toUpperCase()+n.slice(1); if(n){ userName=n; localStorage.setItem('jarvis_name',n); say("Sehr erfreut, "+n+"."); } return; }
+  if(text.includes("wie heiße ich")){ say("Sie heißen "+userName+"."); return; }
+  if(text.includes("fokus aus")) runShortcut('Fokus aus');
+  else if(text.includes("fokus")) runShortcut('Fokus an');
+  else if(text.includes("playlist")||text.includes("musik")) runShortcut('Playlist');
+  else if(text.includes("nachricht")) sendMessage();
+  else if(text.includes("e-mail")||text.includes("email")||text.includes("mail")) sendEmail();
+  else if(text.includes("notiz")) runShortcut('Notiz erstellen');
+  else if(text.includes("instagram")||text.includes("insta")) openApp('instagram');
+  else if(text.includes("tiktok")) openApp('tiktok');
+  else if(text.includes("youtube")) openApp('youtube');
+  else if(text.includes("spotify")) openApp('spotify');
+  else if(text.includes("kamera")) openApp('camera');
+  else if(text.includes("uhr")||text.includes("zeit")) askTime();
+  else if(text.includes("witz")) askJoke();
+  else if(text.includes("wetter")) askWeather();
+  else if(text.includes("datum")) askDate();
+  else if(text.includes("timer")) startTimer(5);
+  else if(text.includes("danke")) say("Stets zu Ihren Diensten, "+userName+".");
+  else if(text.includes("hallo")||text.includes("hey")) say("Hallo "+userName+". Bereit.");
+  else askAI(text);
+}
+function askTime(){ const n=new Date(); say("Es ist "+n.getHours()+" Uhr "+String(n.getMinutes()).padStart(2,'0')+", "+userName+"."); }
+function askJoke(){ const j = ALL_JOKES[jokeIndex % ALL_JOKES.length]; jokeIndex++; say(j); }
+function askDate(){ const n=new Date(); const t=["Sonntag","Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag"]; say("Heute ist "+t[n.getDay()]+", der "+n.getDate()+"."+(n.getMonth()+1)+"."+n.getFullYear()+", "+userName+"."); }
+function askWeather(){ say("Ich checke das Wetter, "+userName+"."); fetch('https://wttr.in/Berlin?format=%C+%t').then(r=>r.text()).then(t=>say("In Berlin: "+t+", "+userName+".")).catch(()=>say("Wetter nicht ladbar.")); }
+function startTimer(m){ say("Timer "+m+" Minuten, "+userName+"."); setTimeout(()=>{ say(userName+"! Timer um!"); },m*60*1000); }
+function sendChat(){ const q=chatInput.value.trim(); if(!q)return; chatInput.value=""; handleCommand(q.toLowerCase()); }
+
+document.getElementById('btnStart').onclick=startJarvis;
+document.getElementById('btnTime').onclick=askTime;
+document.getElementById('btnJoke').onclick=askJoke;
+document.getElementById('btnWeather').onclick=askWeather;
+document.getElementById('btnFocus').onclick=()=>runShortcut('Fokus an');
+document.getElementById('btnFocusOff').onclick=()=>runShortcut('Fokus aus');
+document.getElementById('btnPlaylist').onclick=()=>runShortcut('Playlist');
+document.getElementById('btnSpotify').onclick=()=>openApp('spotify');
+document.getElementById('btnMsg').onclick=sendMessage;
+document.getElementById('btnEmail').onclick=sendEmail;
+document.getElementById('btnNote').onclick=()=>runShortcut('Notiz erstellen');
+document.getElementById('btnYT').onclick=()=>openApp('youtube');
+document.getElementById('btnInsta').onclick=()=>openApp('instagram');
+document.getElementById('btnTikTok').onclick=()=>openApp('tiktok');
+document.getElementById('btnCamera').onclick=()=>openApp('camera');
+document.getElementById('reactor').onclick=startJarvis;
+document.getElementById('btnSend').onclick=sendChat;
+document.getElementById('btnTestVoice').onclick=()=>say("Guten Tag, "+userName+". Ich bin Jarvis. Alle Systeme laufen.");
+chatInput.addEventListener('keydown',(e)=>{ if(e.key==='Enter')sendChat(); });
+</script>
+</body>
+</html>
