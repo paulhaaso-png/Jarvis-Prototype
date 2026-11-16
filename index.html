@@ -141,7 +141,7 @@ async function askGemini(q){
   core.classList.add('thinking'); core.innerHTML="DENKE<br>NACH..."; output.innerHTML="<b>DU:</b> "+q+"<br><b>JARVIS:</b> Einen Moment, "+userName+"...";
   try{
     const history = chatHistory.slice(-6).map(h=>({role: h.role, parts:[{text:h.text}]}) );
-    const prompt = "Du bist JARVIS aus Iron Man, der persönliche Assistent von "+userName+". Sprich IMMER perfektes, korrektes Deutsch. Grammatik muss 100% richtig sein. Antworte locker, witzig und freundlich, wie ein echter Freund. Max 2-3 Sätze, kurz und klar. Du darfst über Energielevel (98%), Reaktor und Systeme reden, aber nur wenn es zum Gespräch passt. Sprich den User immer als "+userName+" an. Wenn du etwas nicht weißt, sag ehrlich: Das weiß ich nicht genau. Erfinde nichts. Frage des Users: "+q;
+    const prompt = "Du bist JARVIS aus Iron Man, der persönliche Assistent von "+userName+". Sprich IMMER perfektes, korrektes Deutsch. Grammatik muss 100% richtig sein. Antworte locker, witzig und freundlich, wie ein echter Freund. Max 2-3 Sätze, kurz und klar. Du darfst über Energielevel (98%), Reaktor und Systeme reden, aber nur wenn es zum Gespräch passt. Sprich den User immer als Mr "+userName+" an. Wenn du etwas nicht weißt, sag ehrlich: Das weiß ich nicht genau. Erfinde nichts. Frage des Users: "+q;
     const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key='+GEMINI_API_KEY, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
